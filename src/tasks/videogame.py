@@ -1,14 +1,13 @@
 import os, sys, time, queue
 import numpy as np
 import threading
-import gzip
 
 from psychopy import visual, core, data, logging, event, sound, constants
 from .task_base import Task
 
 from ..shared import config, utils
 from PIL import Image
-
+import gzip
 import retro
 
 DEFAULT_GAME_NAME = "ShinobiIIIReturnOfTheNinjaMaster-Genesis"
@@ -18,7 +17,7 @@ DEFAULT_GAME_NAME = "ShinobiIIIReturnOfTheNinjaMaster-Genesis"
 # KEY_SET = ['a','b','c','d','up','down','left','right','x','y','z','k']
 # KEY_SET = ['x','z','_','_','up','down','left','right','c','_','_','_']
 DEFAULT_KEY_SET = ["y", "a", "_", "_", "u", "d", "l", "r", "b", "_", "_", "_"]
-
+# DEFAULT_KEY_SET = ['a','b','c','d','up','down','left','right','x','y','z','k']
 # KEY_SET = '0123456789'
 
 _keyPressBuffer = []
@@ -172,13 +171,11 @@ class VideoGameBase(Task):
             flipVert=True,
             autoLog=False,
         )
-        from ..shared.eyetracking import fixation_dot
-        self.fixation_dot = fixation_dot(exp_win)
-
 
     def _render_graphics_sound(self, obs, sound_block, exp_win, ctl_win):
         #giving a PIL image directly avoid a lot of useless rescaling/conversion
-        self.game_vis_stim.image = Image.fromarray(obs).transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+        self.game_vis_stim.image = Image.fromarray(obs).transpose(Image.FLIP_TOP_BOTTOM)
+        #self.game_vis_stim.image = obs / 255.0
         self.game_vis_stim.draw(exp_win)
         if ctl_win:
             self.game_vis_stim.draw(ctl_win)
@@ -196,11 +193,12 @@ class VideoGameBase(Task):
 
     def unload(self):
         self.emulator.close()
-        del self.game_sound, self.fixation_dot, self.game_vis_stim
 
     def fixation_cross(self, exp_win):
+        from ..shared.eyetracking import fixation_dot
         yield True
-        for stim in self.fixation_dot:
+        fixation = fixation_dot(exp_win)
+        for stim in fixation:
             stim.draw(exp_win)
         yield True
         self._log_event({'trial_type':'fixation_dot', 'duration': self._fixation_duration}, clock='flip')
@@ -217,6 +215,8 @@ class VideoGame(VideoGameBase):
         post_level_ratings=None,
         post_run_ratings=None,
         key_set=DEFAULT_KEY_SET,
+        time_exceeded=False,
+        last_movie_path=None,
         *args,
         **kwargs
     ):
@@ -228,6 +228,8 @@ class VideoGame(VideoGameBase):
         self.post_run_ratings = post_run_ratings
         self.key_set = key_set
         self._completed = False
+        self.time_exceeded = time_exceeded
+        self.last_movie_path = last_movie_path
 
     def _instructions(self, exp_win, ctl_win):
 
@@ -318,12 +320,12 @@ class VideoGame(VideoGameBase):
         _keyPressBuffer.clear()
 
     def _run_emulator(self, exp_win, ctl_win):
-
+        
         total_reward = 0
         _done = False
         level_step = 0
         keys = [False] * 12
-
+   
         # flush all keys to avoid unwanted actions
         self.clear_key_buffers()
 
@@ -383,6 +385,7 @@ class VideoGame(VideoGameBase):
         self._rep_event['offset'] = self.task_timer.getTime()
         self._rep_event['duration'] = self._rep_event['offset'] - self._rep_event['onset']
         self._completed = self._completed or self._game_info['lives'] > -1
+        logging.exp(f"Number of lives = {self._game_info['lives']}")
         self.game_sound.flush()
         self.game_sound.stop()
         self.emulator.stop_record()
@@ -540,13 +543,13 @@ class VideoGame(VideoGameBase):
         while True:
             self._handle_controller_presses(exp_win)
             new_key_pressed = [k[0] for k in self._new_key_pressed]
-            if "u" in new_key_pressed and active_question > 0:
+            if DEFAULT_KEY_SET[4] in new_key_pressed and active_question > 0:
                 active_question -= 1
-            elif "d" in new_key_pressed and active_question < len(questions)-1:
+            elif DEFAULT_KEY_SET[5] in new_key_pressed and active_question < len(questions)-1:
                 active_question += 1
-            elif "r" in new_key_pressed and responses[active_question] < n_pts - 1:
+            elif DEFAULT_KEY_SET[7] in new_key_pressed and responses[active_question] < n_pts - 1:
                 responses[active_question] += 1
-            elif "l" in new_key_pressed and responses[active_question] > 0:
+            elif DEFAULT_KEY_SET[6] in new_key_pressed and responses[active_question] > 0:
                 responses[active_question] -= 1
             elif "a" in new_key_pressed:
                 for (key, question, n_pts), value in zip(questions, responses):
@@ -684,19 +687,20 @@ class VideoGameMultiLevel(VideoGame):
         #exp_win.waitBlanking = False
         self._set_key_handler(exp_win)
         self._nlevels = 0
-        time_exceeded = False
         self.stop_state_outfile = None
         exp_win.setColor(self._bg_color, colorSpace='rgb255')
         if ctl_win:
             ctl_win.setColor(self._bg_color, colorSpace='rgb255')
-        while True:
-            for level, scenario in zip(self._state_names, self._scenarii):
-                n_repeats = self._n_repeats_level
+        for level, scenario in zip(self._state_names, self._scenarii):
+
+            self._nlevels += 1
+                    
+            while not self._completed:
                 # load a custom file, like a saved state not in the integration
-                if os.path.exists(level):
-                    with gzip.open(level, 'rb') as fh:
+                if self.time_exceeded:
+                    with gzip.open(self.last_movie_path, 'rb') as fh:
                         self.emulator.initial_state = fh.read()
-                    n_repeats = 1 # repeat only once
+                    self.time_exceeded = False
                 else:
                     self.state_name = level
                     self.emulator.load_state(level, inttype=self.inttype)
@@ -705,51 +709,44 @@ class VideoGameMultiLevel(VideoGame):
                     retro.data.get_file_path(self.game_name, f"{scenario}.json", inttype=self.inttype)
                 )
 
-                self._nlevels += 1
                 if self._nlevels > 1:
                     if self._show_instruction_between_repetitions:
                         yield from self._instructions(exp_win, ctl_win)
+                self._first_frame = self.emulator.reset()
 
-                for n_repeat in range(n_repeats):
-                    self._first_frame = self.emulator.reset()
+                self._set_recording_file()
 
-                    self._set_recording_file()
+                if self._fixation_duration > 0:
+                    self.progress_bar.set_description("fixation")
+                    yield from self.fixation_cross(exp_win)
+                self.progress_bar.set_description(level)
 
-                    if self._fixation_duration > 0:
-                        self.progress_bar.set_description("fixation")
-                        yield from self.fixation_cross(exp_win)
-                    self.progress_bar.set_description(level)
-
-                    if self.max_duration and self._hard_run_duration_limit:
-                        for clearBuffer in super()._run_emulator(exp_win, ctl_win):
-                            yield clearBuffer
-                            if self.task_timer.getTime() > self.max_duration:
-                                time_exceeded=True
-                                # save the current state
-                                self.stop_state_outfile = self._generate_unique_filename("run","state")
-                                with gzip.open(self.stop_state_outfile, 'wb') as fh:
-                                    fh.write(self.emulator.em.get_state())
-                                self._stop_state = self.emulator.get_ram().tobytes()
-                                self._end_repetition() # clean stop the emulator + events
-                                break
-                    else:
-                        yield from super()._run_emulator(exp_win, ctl_win)
-                    self.game_sound.stop()
-                    self._level_completed = self.completion_fn(self.emulator) if self.completion_fn else True
-                    if self._level_completed:
-                        self._level_completed = False
-                        break
-
-                yield from self._questionnaire(
-                    exp_win, ctl_win, self.post_level_ratings
-                )
-
-                time_exceeded = (
-                    self.max_duration and self.task_timer.getTime() > self.max_duration
-                )
-                if time_exceeded:  # stop if we are above the planned duration
+                if self.max_duration and self._hard_run_duration_limit:
+                    for clearBuffer in super()._run_emulator(exp_win, ctl_win):
+                        yield clearBuffer
+                        if self.task_timer.getTime() > self.max_duration:
+                            self.time_exceeded=True
+                            # save the current state
+                            self.stop_state_outfile = self._generate_unique_filename("run","state")
+                            with gzip.open(self.stop_state_outfile, 'wb') as fh:
+                                fh.write(self.emulator.em.get_state())
+                            self._stop_state = self.emulator.get_ram().tobytes()
+                            self._end_repetition() # clean stop the emulator + events
+                            break
+                else:
+                    yield from super()._run_emulator(exp_win, ctl_win)
+                self.game_sound.stop()
+                
+                if self.time_exceeded:
+                    logging.exp(f"Run time up somewhere in between {self.state_name}")
                     break
-            if time_exceeded or not self._repeat_scenario_multilevel:
+                elif not self._completed:  # stop if we are above the planned duration
+                    logging.exp(f"3 lives used once during {self.state_name}. Restarting...")
+                elif self._completed:
+                    logging.exp(f"{self.state_name} successfuly completed at least once.")
+                    self._completed = False
+                    break
+            if self.time_exceeded:
                 break
         if self._fixation_duration > 0:
             self.progress_bar.set_description("fixation")

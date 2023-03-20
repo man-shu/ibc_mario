@@ -59,6 +59,7 @@ def run_profiled(parsed):
 
 if __name__ == "__main__":
     parsed = parser.parse_args()
+    parsed.skip_soundcheck = True
     if parsed.profile:
         run_profiled(parsed)
     else:
