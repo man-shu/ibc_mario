@@ -55,19 +55,32 @@ def get_tasks(parsed):
     for run in range(10):
         if savestate['world'] == 9:
             break
+        if run==0:
+            yield task_base.Pause(
+                text="Appuyez sur A lorsque vous êtes prêt à continuer",
+                pic_path="/home/himanshu/Desktop/IBC/cognitive_protocols/mario/instruction/controls_fr1.png",
+                wait_key='a',
+                text_pos=(0, 0.51)
+            )
+        # receive first ttl pulse and initiate stimulation
+        yield task_base.Pause(
+            text="+",
+            wait_key='t', text_color='red', text_height=0.2
+        )
         task = videogame.VideoGameMultiLevel(
             game_name='SuperMarioBros-Nes',
             state_names=all_states,
             scenarii=[scenario] * len(all_states),
             repeat_scenario=False,
-            max_duration=2 * 60,  # if when level completed or dead we exceed that time in secs, stop the task
+            max_duration=20,  # if when level completed or dead we exceed that time in secs, stop the task
             name=f"task-mario_run-{run+1:02d}",
-            instruction="playing Super Mario Bros {state_name} \n\n Let's-a go!",
+            instruction="jouer à Super Mario Bros {state_name} \n\n Let's-a go!",
             post_run_ratings = [(k, q, 7) for k, q in enumerate(flow_ratings)],
             use_eyetracking=True,
             time_exceeded=last_run_time_up,
             last_movie_path=last_run_movie_path,
-            hard_run_duration_limit=True
+            hard_run_duration_limit=True,
+            show_instruction_between_repetitions=False
         )
         yield task
         if task.time_exceeded:
@@ -89,6 +102,6 @@ def get_tasks(parsed):
         all_states = create_states(savestate['world'], savestate['level'])
 
         yield task_base.Pause(
-            text="You can take a short break.\n Press A when ready to continue",
-            wait_key='a',
+            text="FIN",
+            wait_key='space'
         )

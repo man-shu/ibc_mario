@@ -212,8 +212,7 @@ We are coming to get you out of the scanner shortly."""
         all_tasks = itertools.chain(
             all_tasks,
             [task_base.Pause(
-                """We are done with the tasks for today.
-Thanks for your participation!"""
+                """FIN! MERCI!""", wait_key='space'
             )],
         )
 

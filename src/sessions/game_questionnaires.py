@@ -1,14 +1,14 @@
 flow_ratings = [
-    "I feel just the right amount of challenge.",
-    "My thoughts/activities run fluidly and smoothly.",
-    "I don’t notice time passing.",
-    "I have no difficulty concentrating.",
-    "My mind is completely clear.",
-    "I am totally absorbed in what I am doing.",
-    "The right thoughts/movements occur of their own accord.",
-    "I know what I have to do each step of the way.",
-    "I feel that I have everything under control.",
-    "I am completely lost in thought.",
+    "Je ressens juste ce qu'il faut de défi.",
+    "Mes pensées/activités se déroulent de manière fluide et sans heurts.",
+    "Je ne remarque pas le temps qui passe.",
+    "Je n'ai aucune difficulté à me concentrer.",
+    "Mon esprit est parfaitement clair.",
+    "Je suis totalement absorbé par ce que je fais.",
+    "Les bonnes pensées/mouvements se produisent d'eux-mêmes.",
+    "Je sais ce que je dois faire à chaque étape.",
+    "J'ai l'impression de tout maîtriser.",
+    "Je suis complètement perdu dans mes pensées.",
 ]
 
 other_ratings = [

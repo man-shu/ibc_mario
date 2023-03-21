@@ -154,12 +154,16 @@ class Task(object):
 
 
 class Pause(Task):
-    def __init__(self, text="Taking a short break, relax...", **kwargs):
+    def __init__(self, text="Taking a short break, relax...", pic_path=None, text_color="white", text_pos=(0, 0), text_height=None, **kwargs):
         self.wait_key = kwargs.pop("wait_key", False)
         if not "name" in kwargs:
             kwargs["name"] = "Pause"
         super().__init__(**kwargs)
         self.text = text
+        self.pic_path = pic_path
+        self.text_color = text_color
+        self.text_pos = text_pos
+        self.text_height = text_height
 
     def _setup(self, exp_win):
         self.use_fmri = False
@@ -171,14 +175,21 @@ class Pause(Task):
             exp_win,
             text=self.text,
             alignText="center",
-            color="white",
+            color=self.text_color,
             wrapWidth=config.WRAP_WIDTH,
+            pos=self.text_pos,
+            height=self.text_height
         )
+        picture = visual.ImageStim(exp_win)
 
         while True:
             if not self.wait_key is False:
-                if len(event.getKeys(self.wait_key)):
+                if len(event.getKeys([self.wait_key])):
                     break
+            if self.pic_path != None:
+                picture.setImage(self.pic_path)
+                picture.draw()
+
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)

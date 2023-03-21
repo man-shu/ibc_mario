@@ -460,7 +460,7 @@ class VideoGame(VideoGameBase):
         # add legends to Likert scale
         legends.append(visual.TextStim(
             exp_win,
-            text = 'Disagree',
+            text = 'Désaccord',
             units="pix",
             pos=(scales_block_x - extent*0.75, scales_block_y*1.1),
             wrapWidth= win_width * 0.5,
@@ -471,7 +471,7 @@ class VideoGame(VideoGameBase):
         ))
         legends.append(visual.TextStim(
             exp_win,
-            text = 'Agree',
+            text = 'Accord',
             units="pix",
             pos=(scales_block_x + extent*1.15, scales_block_y*1.1),
             wrapWidth= win_width * 0.5,

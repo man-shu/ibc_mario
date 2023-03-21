@@ -8,7 +8,7 @@ from psychopy.monitors import Monitor
 prefs.hardware["audioLib"] = ["sounddevice"]
 # prefs.hardware['general'] = ['glfw']
 
-TR = 1.49 #seconds
+TR = 2 #seconds
 
 OUTPUT_DIR = "output"
 
@@ -44,7 +44,7 @@ CTL_WINDOW = dict(
 FRAME_RATE = 60
 
 # task parameters
-INSTRUCTION_DURATION = 3
+INSTRUCTION_DURATION = 0
 
 WRAP_WIDTH = 2
 
