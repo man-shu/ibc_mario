@@ -1,6 +1,6 @@
 flow_ratings = [
     "Je ressens juste ce qu'il faut de défi.",
-    "Mes pensées/activités se déroulent de manière fluide et sans heurts.",
+    "Mes pensées/activités se déroulent de manière fluide et sans heurt.",
     "Je ne remarque pas le temps qui passe.",
     "Je n'ai aucune difficulté à me concentrer.",
     "Mon esprit est parfaitement clair.",

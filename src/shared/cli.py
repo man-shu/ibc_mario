@@ -59,7 +59,7 @@ def run_task(
     )
 
     if task.use_fmri and not shortcut_evt:
-        for _ in fmri.wait_for_ttl():
+        for _ in fmri.wait_for_ttl(exp_win, ctl_win):
             shortcut_evt = listen_shortcuts()
             if shortcut_evt:
                 return shortcut_evt
@@ -184,16 +184,14 @@ def main_loop(
 
         all_tasks = itertools.chain(
             [task_base.Pause(
-                """We are completing the setup and initializing the scanner.
-We will start the tasks in a few minutes.
-Please remain still."""
+                """Appuyez sur A lorsque vous\nêtes prêt à continuer""",
+                pic_path="instruction/controls_fr.png",
+                wait_key='a',
+                text_pos=(0, 0.51)
             )],
             all_tasks,
             [task_base.Pause(
-                """We are done for today.
-The scanner might run for a few seconds to acquire reference images.
-Please remain still.
-We are coming to get you out of the scanner shortly."""
+                """FIN! MERCI!""", wait_key='space'
             )],
         )
 
