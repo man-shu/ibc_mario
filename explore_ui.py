@@ -11,7 +11,7 @@ def load_movie(bk2):
     while movie.step():
         duration += 1
     movie = retro.Movie(bk2)
-    movie.step()
+    # movie.step()
     emulator = retro.make(game=movie.get_game(), state=retro.State.NONE, use_restricted_actions=retro.Actions.ALL, players=movie.players)
     data = movie.get_state()
     emulator.initial_state = data
@@ -52,15 +52,15 @@ def create_frames(emulator, movie, video_delay=0):
 retro.data.Integrations.add_custom_path("/home/himanshu/Desktop/IBC/cognitive_protocols/mario/data/videogames/mario")
 print("SuperMarioBros-Nes" in retro.data.list_games(inttype=retro.data.Integrations.CUSTOM_ONLY))
 
-root = '/home/himanshu/Desktop/IBC/cognitive_protocols/mario/output/sourcedata/sub-test/ses-test/'
+root = '/home/himanshu/Desktop/IBC/cognitive_protocols/mario/output/sourcedata/sub-98/ses-1/'
 
-names = ['sub-test_ses-test_20230305-121948_SuperMarioBros-Nes_Level1-1_000','sub-test_ses-test_20230217-161617_SuperMarioBros-Nes_Level1-1_000', 'sub-test_ses-test2_20230305-133131_SuperMarioBros-Nes_Level1-1_000','sub-test_ses-test2_20230305-133209_SuperMarioBros-Nes_Level1-1_000']
+names = ['sub-98_ses-1_20230322-152436_SuperMarioBros-Nes_Level1-1_000']
 
 
 bk2s = [os.path.join(root, i+'.bk2') for i in names]
 npzs = [os.path.join(root, i+'.npz') for i in names]
 
-index = 1
+index = 0
 
 if ~os.path.isfile(npzs[index]):
     os.system(f'python play_session.py {bk2s[index]} -i -a')

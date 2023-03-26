@@ -1,111 +1,81 @@
-# task_stimuli
+## Display settings
 
-This software is a set of cognitive tasks developed in psychopy and a system to schedule sets of tasks during a session.
+* Extend the primary display to the slave monitor.
+* Display resolution - 1920 x 1080, refresh rate - 60 Hz.
 
-Tasks are classes defined in `src/tasks`, and are instantiated in `src/sessions` files that describe a set of tasks in the session.
+## Other Setup
 
-Material for the task (images/movies/lists...) is stored mainly in `data`
+* Connect the teensy board's USB cable to the laptop
+* All keys should report OK
+* If not, try disconnecting the respective optic fiber, and reconnecting and/or polishing the terminals
+* Reconnect the USB and make sure all keys report OK
+* Just to be sure, ask the subject to press the keys too
 
-Outputs (logs, responses) are stored in the `output` folder and try to mimic a BIDS structure.
+## How to run
 
-When used with option `--fmri` tasks waits for a new TTL character to start.
+* Make sure the conda environment is active
+	
+	```
+	conda activate py38psypy
+	```
 
-When used with the option `--eyetracking` this software will start Pupil, and trigger the recording of the eye movie and detected pupil position, which outputs to the `output` folder in a BIDS-like way.
-Note that eyetracking data would require offline post/re-processing to be used and shared.
+* Go into the task folder:
+	
+	```
+	cd C:\Users\Public\gitrepos\cognitive_protocols\mario
+	```
 
-`utils` contains scripts to prepare movies in a reproducible way using the melt command line video editor in singularity.
+## Practice
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+* No practice, just make sure that the subject has read the instructions
 
+## Scanner task
 
-## Attributions
+* Run the script `main.py` as follows:
+	
+	```
+	python main.py --subject {test} --session {test} --tasks mario-ibc -o output/ --fmri
+	```
 
-...
+* Enter subject and session numbers inplace of `{test}`.
+* There are six runs. In case of a restart, delete the files corresponsding to the faulty run in the `output/sourcedata` directory
 
-## INSTALL
+## How to quit
 
-```
-apt install python3-pip git
-mkdir git
-cd git
+Press `Ctrl+C` anytime.
 
-# this section is optional, only if using eyetracking
-git clone https://github.com/pupil-labs/pupil.git
-# follow instructions at https://docs.pupil-labs.com/#linux-dependencies
+## Responses
 
-pip3 install git+https://github.com/psychopy/psychopy.git
-# modify the file in psychopy that crashes
-pip3 install scikit-video
+* 8 buttons on the gaming controller.
 
-git clone git@github.com:courtois-neuromod/task_stimuli.git
-cd task_stimuli
-mkdir output
-```
+## After the acquisition
 
+`output/sourcedata` folder contains log of the run.  
 
-## how to launch a session
+### Data extraction
 
-`python3 main.py --subject test --session video003 --tasks videoshorttest --eyetracking --fmri -o /path/to/dataset/`
+* Activate conda environment py38psypy 
+	
+	```
+    conda activate py38psypy
+	```
 
-- --subject: can be whatever, will be used to save data in a bids-like structure
-- --session: a session identifier that will be used to save the data in the BIDS
-- --tasks: must match the name of a session script in `src/ses-<session_name>.py`, which contains the tasks to be ran on that session
-- --eyetracking: turn on eyetracking, start pupil software and recording of eye
-- -o : specifies the path to the root of the dataset where to output the data (in sourcedata or BIDS )
+* Run `paradigm_descriptors.py` as follows:
 
-- --fmri: will wait for TTL (can be emulated with character `5` on the keyboard) to start the tasks that are labeled as fmri dependent. When not using that flag, tasks will run back to back. It will also append a video loop at the beginning of the session in order for the participant to have sound and visual stimuli to test the setup (then skip to start the session).
+	```
+    python paradigm_descriptors.py
+	```
 
-- --meg: TODO!
+* Enter subject number when prompted.
 
+* Output event files would be stored in `output_paradigm_descriptors` folder
 
-If you run multiple time this command, there are no risks of overwriting, the data will be suffixed by the date and time of start of the session.
+## Design
 
-## Creating session files
+* 6 runs (starting from 1)
+* Each run is 10 min 
 
-You can create new sessions by adding a `ses-xxxx.py` file in `src/sessions` folder.
-Each file only create a `TASKS` list of task subclasses instances, that is loaded by the script and ran in the provided order.
-Check the existing files for examples.
+## Software info
 
-## How to interact with the software:
-
-### stimuli
-
-- `5`: emulate the trigger of MRI and start task "by hand" (can be changed in `src/shared/fmri.py`)
-- `<ctrl>-c` : abort and **skip** the current task and move to the next one
-- `<ctrl>-n` : abort the task and restart it, showing again the instruction
-- `<ctrl>-q` : quit the session, saves and close the eyetracking software
-
-If (and only if) the software stop responding and you cannot quit, switch to the terminal and kill the software with `<ctrl>-c`.
-
-### eyetracking
-
-There are "hotkeys in the pupil software to trigger actions", use the buttons with these letters or type.
-C (<shift>-c): launch the calibration of the eyetracking, showing markers to the participant
-T (<shift>-t): a test of the calibration accuracy, also showing markers on the screen
-
-
-**Important: there are two softwares running, Psychopy and Pupil, when done with calibration, click on the Stimuli window to give the focus back to Psychopy, otherwise it will not get the TTL and the task will not start with the scanner.**
-
-This is a problem that has to be fixed in the future to avoid failed acquisition start.
-Update: should be fixed now, the software takes focus when task is loaded.
-
-# source code
-
-psychopy scripts for stimuli presentations
-
-src/tasks contains scripts for tasks
-
-src/shared folder should factorize the code common across tasks
-
-## eyetracking
-
-The eyetracking part is managed by launching pupil capture software and launching a single recording for the whole session.
-
-### calibration
-
-Run a short calibration task where the subjects have to look at points shown on the screen
-
-### gazemapping
-
-Once the calibration has been run (though it seems that pupil reload previous calibration), pupil produces gaze information that corresponds to position on the screen.
-We then display that information in almost real-time on the experimenter screen.
+* Python 3.8.5, Psychopy 2021.1.3, Gym retro
+* Primary script `main.py`

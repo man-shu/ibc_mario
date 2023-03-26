@@ -13,7 +13,7 @@
     * install `gym-retro`: pip install gym==0.25.2 because no hash-seed module in newer version
     * install `datalad`
 
-* run with `python main.py --subject test --session test --tasks mario -o output/`
+* run with `python main.py --subject test --session test --tasks mario-ibc -o output/`
 
 * one run ends when:
     - level is successfully finished
@@ -46,11 +46,11 @@
         - movement (down, left, right, jump, run) (`keypress`)
         - shoot (`keypress`)
     - reward
-        - coin (`coins` increment by ?)
-        - brick smash (`score` increment ?)
-        - enemy kill (increment in `enemy_kill30-35` by `4` if stomped, by `34` if by fire or others)
+        - coin (`coins` increment by 1)
+        - brick smash (`score` increment 5)
+        - enemy kill (increment in `enemy_kill30-35` by `4` if stomped, by `34` if by fire/impact and by `132` if kicked)
         - power taken (increment in `(powerup_appear + 1) * powerup_yes_no` by ? and `score` increment by `100`) (duration could be figured out by `player_state`)
-    - punishment
+    - loss
         - power down (`powerstate` goes down, maybe better with `player_state`)
         - dying (`player_state`)
     - npc_appear

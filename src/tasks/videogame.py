@@ -126,7 +126,7 @@ class VideoGameBase(Task):
         repeat_scenario=True,
         scaling=1,
         inttype=retro.data.Integrations.CUSTOM_ONLY,
-        bg_color=(0,0,0),
+        bg_color=(-1,-1,-1),
         *args,
         **kwargs
     ):
@@ -186,9 +186,9 @@ class VideoGameBase(Task):
     def _stop(self, exp_win, ctl_win):
         self.game_sound.stop()
         self.emulator.stop_record() # to be sure to save the bk2
-        exp_win.setColor([0] * 3, colorSpace='rgb')
+        exp_win.setColor([-1] * 3, colorSpace='rgb')
         if ctl_win:
-            ctl_win.setColor([0] * 3, colorSpace='rgb')
+            ctl_win.setColor([-1] * 3, colorSpace='rgb')
         yield True
 
     def unload(self):
@@ -426,9 +426,9 @@ class VideoGame(VideoGameBase):
                 break
             self.emulator.reset()
 
-        exp_win.setColor([0] * 3, colorSpace='rgb255')
+        exp_win.setColor([-1] * 3, colorSpace='rgb255')
         if ctl_win:
-            ctl_win.setColor([0] * 3, colorSpace='rgb255')
+            ctl_win.setColor([-1] * 3, colorSpace='rgb255')
 
     def _run_ratings(self, exp_win, ctl_win):
         for question, n_pts in self.post_level_ratings:

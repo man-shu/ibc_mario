@@ -15,7 +15,9 @@ from .game_questionnaires import flow_ratings
 
 scenario = "scenario"
 
-exclude_list = [(2,2),(7,2)] # all levels 4 are excluded below
+# not doing level 2s of worlds 2 and 7
+# all level 4s are excluded below
+exclude_list = ["Level2-2", "Level7-2"] 
 
 def create_states(init_world, init_level):
     all_states = []
@@ -26,6 +28,9 @@ def create_states(init_world, init_level):
             world = init_world
             level = init_level
             state = f"Level{world}-{level}"
+            # not doing level 2s of worlds 2 and 7
+            if state in exclude_list:
+                continue
             all_states.append(state)
             init_level += 1
         init_world += 1
@@ -33,6 +38,9 @@ def create_states(init_world, init_level):
     for world in range(init_world, 9):
         for level in range(init_level, 4):
             state = f"Level{world}-{level}"
+            # not doing level 2s of worlds 2 and 7
+            if state in exclude_list:
+                continue
             all_states.append(state)
     return all_states
 
@@ -60,7 +68,7 @@ def get_tasks(parsed):
             state_names=all_states,
             scenarii=[scenario] * len(all_states),
             repeat_scenario=False,
-            max_duration=10 * 60,  # if when level completed or dead we exceed that time in secs, stop the task
+            max_duration=1 * 60,  # if when level completed or dead we exceed that time in secs, stop the task
             name=f"task-mario_run-{run+1:02d}",
             instruction="jouer à Super Mario Bros {state_name} \n\n Let's-a go!",
             post_run_ratings = [(k, q, 7) for k, q in enumerate(flow_ratings)],
