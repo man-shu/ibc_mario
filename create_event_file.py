@@ -203,7 +203,8 @@ def extract_events(file, data_dir, out_files, out_dir, do_convolve=False):
         frame_imgs_arrs = []
         total_duration = 0
         for run_bk2 in run_bk2s:     
-            os.system(f'python play_session.py {run_bk2} -i -a >/dev/null 2>&1')
+            # os.system(f'python play_session.py {run_bk2} -i -a >/dev/null 2>&1')
+            os.system(f'python play_session.py {run_bk2} -i -a')
 
             emulator, movie, duration = load_movie(run_bk2)
             frame_imgs_arr = create_frames(emulator, movie, video_delay=0)
@@ -245,7 +246,7 @@ def extract_events(file, data_dir, out_files, out_dir, do_convolve=False):
             run_infos['reward_coin'] = convolve(run_infos['coin_increment'], np.ones(23), mode='same')
         else:
             run_infos['reward_coin'] = np.where(run_infos['coin_increment'] > 0, 1, 0)
-        run_infos['reward_bricksmash'] = np.where(run_infos['score_increment'] == 5, 1, 0)
+        run_infos['reward_bricksmash'] = np.where((run_infos['score_increment'] == 5) & (run_infos['jump_airborne'] == 1), 1, 0)
         if do_convolve:
             run_infos['reward_bricksmash'] = convolve(run_infos['reward_bricksmash'], np.ones(10), mode='same')
         run_infos['reward_enemykill_stomp'] = np.select([run_infos[f'enemy_kill3{i}']==4 for i in range(0, 6)], [1 for i in range(0, 6)], 0)
@@ -279,11 +280,11 @@ def extract_events(file, data_dir, out_files, out_dir, do_convolve=False):
         run_infos['action_pipedown'] = np.where(run_infos['player_state'] == 3, 1, 0)
         run_infos['action_crouch'] = np.where(run_infos['player_sprite'] == 50, 1, 0)
 
-        # # plot desired variables to see how they change with frame-by-frame gameplay
-        # vars_to_plot = [run_infos['action_leftwalk'], run_infos['action_rightwalk'], run_infos['moving_direction'], run_infos['walk_animation']]
-        # labels = ['action_leftwalk', 'action_rightwalk', 'moving_direction', 'walk_animation']
+        # plot desired variables to see how they change with frame-by-frame gameplay
+        vars_to_plot = [run_infos['reward_bricksmash'], run_infos['score_increment'], run_infos['jump_airborne']]
+        labels = ['reward_bricksmash', 'score_increment', 'jump_airborne']
 
-        # plot_explorer(frame_imgs_arrs, vars_to_plot, labels, False)
+        plot_explorer(frame_imgs_arrs, vars_to_plot, labels, False)
 
         # put all useful variables in one df
         run_infos = run_infos[relevant_events]

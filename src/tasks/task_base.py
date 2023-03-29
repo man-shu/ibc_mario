@@ -184,7 +184,7 @@ class Pause(Task):
 
         while True:
             if not self.wait_key is False:
-                if len(event.getKeys(self.wait_key)):
+                if len(event.getKeys([self.wait_key])):
                     break
             if self.pic_path != None:
                 picture.setImage(self.pic_path)

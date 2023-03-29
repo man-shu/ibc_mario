@@ -2,6 +2,7 @@
 
 * Extend the primary display to the slave monitor.
 * Display resolution - 1920 x 1080, refresh rate - 60 Hz.
+* Remember to change the refresh of the slave monitor to 60 Hz (it's usually on 120 Hz)
 
 ## Other Setup
 
@@ -50,7 +51,7 @@ Press `Ctrl+C` anytime.
 
 ## After the acquisition
 
-`output/sourcedata` folder contains log of the run.  
+`output/sourcedata` folder contains log of the run.
 
 ### Data extraction
 

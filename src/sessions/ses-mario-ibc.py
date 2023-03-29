@@ -59,6 +59,8 @@ def get_tasks(parsed):
         savestate = {"world": 1, "level":1}
 
     all_states = create_states(savestate['world'], savestate['level'])
+    # restart from world-1, level-1 if completed all levels
+    all_states = all_states + create_states(1, 1)
 
     for run in range(6):
         if savestate['world'] == 9:
@@ -68,7 +70,7 @@ def get_tasks(parsed):
             state_names=all_states,
             scenarii=[scenario] * len(all_states),
             repeat_scenario=False,
-            max_duration=1 * 60,  # if when level completed or dead we exceed that time in secs, stop the task
+            max_duration=10 * 60,  # if when level completed or dead we exceed that time in secs, stop the task
             name=f"task-mario_run-{run+1:02d}",
             instruction="jouer à Super Mario Bros {state_name} \n\n Let's-a go!",
             post_run_ratings = [(k, q, 7) for k, q in enumerate(flow_ratings)],
@@ -96,6 +98,8 @@ def get_tasks(parsed):
             json.dump(savestate, f)
 
         all_states = create_states(savestate['world'], savestate['level'])
+        # restart from world-1, level-1 if completed all levels
+        all_states = all_states + create_states(1, 1)
 
         yield task_base.Pause(
             text=f"Fin d'acquisition {run+1:02d}\n\nNous avons mis le jeu en pause pour vous.\nVous vous retrouverez exactement au même endroit qu'à la fin du cours précédent.\n\nAlors préparez-vous",
