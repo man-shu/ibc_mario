@@ -71,10 +71,10 @@ class Task(object):
         pass
 
     def __str__(self):
-        return "%s : %s" % (self.__class__, self.name)
+        return f"{self.__class__} : {self.name}"
 
     def _flip_all_windows(self, exp_win, ctl_win=None, clearBuffer=True):
-        if not ctl_win is None:
+        if ctl_win is not None:
             ctl_win.timeOnFlip(self, '_ctl_win_last_flip_time')
             ctl_win.flip(clearBuffer=clearBuffer)
 
@@ -88,7 +88,7 @@ class Task(object):
                 yield
                 self._flip_all_windows(exp_win, ctl_win, clearBuffer)
         # 2 flips to clear screen
-        for i in range(2):
+        for _ in range(2):
             yield
             self._flip_all_windows(exp_win, ctl_win, True)
 
@@ -101,17 +101,17 @@ class Task(object):
 
         if self.progress_bar:
             self.progress_bar.reset()
-        flip_idx = 0
-
-        for clearBuffer in self._run(exp_win, ctl_win):
+        for flip_idx, clearBuffer in enumerate(self._run(exp_win, ctl_win)):
             # yield first to allow external draw before flip
             yield
             self._flip_all_windows(exp_win, ctl_win, clearBuffer)
             # increment the progress bar depending on task flip rate
-            if self.progress_bar:
-                if self._progress_bar_refresh_rate and flip_idx % self._progress_bar_refresh_rate == 0:
-                    self.progress_bar.update(1)
-            flip_idx += 1
+            if (
+                self.progress_bar
+                and self._progress_bar_refresh_rate
+                and flip_idx % self._progress_bar_refresh_rate == 0
+            ):
+                self.progress_bar.update(1)
         self._task_completed = True
 
     def stop(self, exp_win, ctl_win):
@@ -123,7 +123,7 @@ class Task(object):
             self.progress_bar.clear()
             self.progress_bar.close()
         # 2 flips to clear screen and backbuffer
-        for i in range(2):
+        for _ in range(2):
             self._flip_all_windows(exp_win, ctl_win, True)
 
     def restart(self):
@@ -156,7 +156,7 @@ class Task(object):
 class Pause(Task):
     def __init__(self, text="Taking a short break, relax...", **kwargs):
         self.wait_key = kwargs.pop("wait_key", False)
-        if not "name" in kwargs:
+        if "name" not in kwargs:
             kwargs["name"] = "Pause"
         super().__init__(**kwargs)
         self.text = text
@@ -175,10 +175,7 @@ class Pause(Task):
             wrapWidth=config.WRAP_WIDTH,
         )
 
-        while True:
-            if not self.wait_key is False:
-                if len(event.getKeys(self.wait_key)):
-                    break
+        while self.wait_key is False or not len(event.getKeys(self.wait_key)):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)
@@ -195,7 +192,7 @@ Please keep your eyes open and fixate the cross.
 Do not think about something in particular, let your mind wander..."""
 
     def __init__(self, duration=7 * 60, symbol="+", **kwargs):
-        if not "name" in kwargs:
+        if "name" not in kwargs:
             kwargs["name"] = "Pause"
         super().__init__(**kwargs)
         self.duration = duration
@@ -210,7 +207,7 @@ Do not think about something in particular, let your mind wander..."""
             wrapWidth=config.WRAP_WIDTH,
         )
 
-        for frameN in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
+        for _ in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)
@@ -222,7 +219,7 @@ Do not think about something in particular, let your mind wander..."""
         )
         screen_text.height = 0.2
 
-        for frameN in range(config.FRAME_RATE * self.duration):
+        for _ in range(config.FRAME_RATE * self.duration):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)

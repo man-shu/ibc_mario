@@ -24,7 +24,7 @@ You will see pictures of scenes and objects."""
         ):
             self.images_path = images_path
         else:
-            raise ValueError("Cannot find the listed images in %s " % images_path)
+            raise ValueError(f"Cannot find the listed images in {images_path} ")
 
     def _instructions(self, exp_win, ctl_win):
         screen_text = visual.TextStim(
@@ -35,7 +35,7 @@ You will see pictures of scenes and objects."""
             wrapWidth=config.WRAP_WIDTH,
         )
 
-        for frameN in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
+        for _ in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)
@@ -48,14 +48,14 @@ You will see pictures of scenes and objects."""
         exp_win.logOnFlip(
             level=logging.EXP, msg="image: task starting at %f" % time.time()
         )
-        for frameN in range(config.FRAME_RATE * BASELINE_BEGIN):
+        for _ in range(config.FRAME_RATE * BASELINE_BEGIN):
             yield ()
         for trial in self.trials:
             image_path = os.path.join(self.images_path, trial["image_path"])
             img.image = image_path
-            exp_win.logOnFlip(level=logging.EXP, msg="image: display %s" % image_path)
+            exp_win.logOnFlip(level=logging.EXP, msg=f"image: display {image_path}")
             trial["onset"] = self.task_timer.getTime()
-            for frameN in range(config.FRAME_RATE * STIMULI_DURATION):
+            for _ in range(config.FRAME_RATE * STIMULI_DURATION):
                 img.draw(exp_win)
                 if ctl_win:
                     img.draw(ctl_win)
@@ -63,9 +63,9 @@ You will see pictures of scenes and objects."""
             trial["offset"] = self.task_timer.getTime()
             trial["duration"] = trial["offset"] - trial["onset"]
             exp_win.logOnFlip(level=logging.EXP, msg="image: rest")
-            for frameN in range(config.FRAME_RATE * ISI):
+            for _ in range(config.FRAME_RATE * ISI):
                 yield ()
-        for frameN in range(config.FRAME_RATE * BASELINE_END):
+        for _ in range(config.FRAME_RATE * BASELINE_END):
             yield ()
 
     def _save(self):

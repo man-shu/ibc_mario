@@ -16,11 +16,10 @@ class Speech(Task):
 
     def __init__(self, words_file, *args, **kwargs):
         super().__init__(**kwargs)
-        if os.path.exists(words_file):
-            self.words_file = words_file
-            self.words_list = data.importConditions(self.words_file)
-        else:
-            raise ValueError("File %s does not exists" % words_file)
+        if not os.path.exists(words_file):
+            raise ValueError(f"File {words_file} does not exists")
+        self.words_file = words_file
+        self.words_list = data.importConditions(self.words_file)
 
     def _instructions(self, exp_win, ctl_win):
         screen_text = visual.TextStim(
@@ -31,7 +30,7 @@ class Speech(Task):
             wrapWidth=config.WRAP_WIDTH,
         )
 
-        for frameN in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
+        for _ in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)
@@ -47,13 +46,13 @@ class Speech(Task):
             level=logging.EXP, msg="speech: task starting at %f" % time.time()
         )
 
-        for frameN in range(config.FRAME_RATE * BASELINE_BEGIN):
+        for _ in range(config.FRAME_RATE * BASELINE_BEGIN):
             yield ()
         for trial in self.trials:
             text.text = trial["text"]
-            exp_win.logOnFlip(level=logging.EXP, msg="speech: %s" % text.text)
+            exp_win.logOnFlip(level=logging.EXP, msg=f"speech: {text.text}")
             trial["onset"] = self.task_timer.getTime()
-            for frameN in range(config.FRAME_RATE * STIMULI_DURATION):
+            for _ in range(config.FRAME_RATE * STIMULI_DURATION):
                 text.draw(exp_win)
                 if ctl_win:
                     text.draw(ctl_win)
@@ -61,9 +60,9 @@ class Speech(Task):
             trial["offset"] = self.task_timer.getTime()
             trial["duration"] = trial["offset"] - trial["onset"]
             exp_win.logOnFlip(level=logging.EXP, msg="speech: rest")
-            for frameN in range(config.FRAME_RATE * ISI):
+            for _ in range(config.FRAME_RATE * ISI):
                 yield ()
-        for frameN in range(config.FRAME_RATE * BASELINE_END):
+        for _ in range(config.FRAME_RATE * BASELINE_END):
             yield ()
 
     def _save(self):

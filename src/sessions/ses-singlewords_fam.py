@@ -1,7 +1,7 @@
 
 def get_tasks(parsed):
     from ..tasks import language, task_base
-    TASKS = [
+    return [
         language.WordFamiliarity(
             f"{TRIPLET_DATA_PATH}/words_designs/sub-{parsed.subject}_ses-{parsed.session}_run-{run+1:02d}_design.tsv",
             name="task-singlewords",
@@ -9,7 +9,6 @@ def get_tasks(parsed):
         )
         for run in range(N_RUNS_PER_SESSION)
     ]
-    return TASKS
 
 
 TRIPLET_DATA_PATH = "data/language/triplets"
@@ -36,9 +35,9 @@ def generate_design_file(subject, all_words, pilot=False):
     np.random.seed(0)
     isi_set = np.random.random_sample(N_TRIALS_PER_RUN)*ISI_JITTER - ISI_JITTER/2 + ISI
     # seed numpy with subject id to have reproducible design generation
-    seed = int(
-        hashlib.sha1(("%s" % (subject)).encode("utf-8")).hexdigest(), 16
-    ) % (2 ** 32 - 1)
+    seed = int(hashlib.sha1(f"{subject}".encode("utf-8")).hexdigest(), 16) % (
+        2**32 - 1
+    )
     print("seed", seed)
     np.random.seed(seed)
 

@@ -115,9 +115,9 @@ def generate_design_file(subject):
         ])
 
     # seed numpy with subject id to have reproducible design generation
-    seed = int(
-        hashlib.sha1(("%s" % (subject)).encode("utf-8")).hexdigest(), 16
-    ) % (2 ** 32 - 1)
+    seed = int(hashlib.sha1(f"{subject}".encode("utf-8")).hexdigest(), 16) % (
+        2**32 - 1
+    )
     print("seed", seed)
     np.random.seed(seed)
 
@@ -264,8 +264,22 @@ def generate_design_file(subject):
         all_run_trials["onset"] = np.tile(initial_wait + np.arange(n_trials) * trial_duration, n_runs_session)
         all_run_trials["duration"] = image_duration
         # set equal number of flipped and unflipped response mapping
-        all_run_trials["response_mapping_flip_h"] = np.hstack([np.random.permutation(np.arange(2,dtype=np.bool).repeat(n_trials/2)) for i in range(n_runs_session)])
-        all_run_trials["response_mapping_flip_v"] = np.hstack([np.random.permutation(np.arange(2,dtype=np.bool).repeat(n_trials/2)) for i in range(n_runs_session)])
+        all_run_trials["response_mapping_flip_h"] = np.hstack(
+            [
+                np.random.permutation(
+                    np.arange(2, dtype=np.bool).repeat(n_trials / 2)
+                )
+                for _ in range(n_runs_session)
+            ]
+        )
+        all_run_trials["response_mapping_flip_v"] = np.hstack(
+            [
+                np.random.permutation(
+                    np.arange(2, dtype=np.bool).repeat(n_trials / 2)
+                )
+                for _ in range(n_runs_session)
+            ]
+        )
 
         # save a file for the whole session (will be split in runs in the task)
         out_fname = os.path.join(

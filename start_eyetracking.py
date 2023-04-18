@@ -8,7 +8,7 @@ BASE_OUTPUT_DIR = '/home/basile/tests'
 
 def start_eyetracker(args):
 
-    output_path = f"{BASE_OUTPUT_DIR}/{parsed.study}/sub-{parsed.subject}{'/ses-'+parsed.session if parsed.session else ''}"
+    output_path = f"{BASE_OUTPUT_DIR}/{parsed.study}/sub-{parsed.subject}{f'/ses-{parsed.session}' if parsed.session else ''}"
     os.makedirs(output_path, exist_ok=True)
     basename = f"pupil_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
     eyetracker_client = eyetracking.EyeTrackerClient(

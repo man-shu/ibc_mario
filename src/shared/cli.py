@@ -19,9 +19,9 @@ from ..tasks import task_base, video
 
 
 def listen_shortcuts():
-    if any([k[1] & event.MOD_CTRL for k in event._keyBuffer]):
+    if any(k[1] & event.MOD_CTRL for k in event._keyBuffer):
         allKeys = event.getKeys(["n", "c", "q"], modifiers=True)
-        ctrl_pressed = any([k[1]["ctrl"] for k in allKeys])
+        ctrl_pressed = any(k[1]["ctrl"] for k in allKeys)
         all_keys_only = [k[0] for k in allKeys]
         if len(allKeys) and ctrl_pressed:
             return all_keys_only[0]
@@ -32,13 +32,11 @@ def run_task_loop(loop, eyetracker=None, gaze_drawer=None, record_movie=False):
     for frameN, _ in enumerate(loop):
         if gaze_drawer:
             gaze = eyetracker.get_gaze()
-            if not gaze is None:
+            if gaze is not None:
                 gaze_drawer.draw_gazepoint(gaze)
         if record_movie and frameN % 6 == 0:
             record_movie.getMovieFrame(buffer="back")
-        # check for global event keys
-        shortcut_evt = listen_shortcuts()
-        if shortcut_evt:
+        if shortcut_evt := listen_shortcuts():
             return shortcut_evt
         # force regular flushing to keep log in case of hard crash
         if frameN % config.FRAME_RATE == 0:
@@ -48,7 +46,7 @@ def run_task_loop(loop, eyetracker=None, gaze_drawer=None, record_movie=False):
 def run_task(
     task, exp_win, ctl_win=None, eyetracker=None, gaze_drawer=None, record_movie=False
 ):
-    print("Next task: %s" % str(task))
+    print(f"Next task: {str(task)}")
 
     # show instruction
     shortcut_evt = run_task_loop(
@@ -129,16 +127,12 @@ def main_loop(
         if not allow_run_on_battery:
             return
 
-    bids_sub_ses = ("sub-%s" % subject, "ses-%s" % session)
+    bids_sub_ses = f"sub-{subject}", f"ses-{session}"
     log_path = os.path.abspath(os.path.join(output_ds, "sourcedata", *bids_sub_ses))
     if not os.path.exists(log_path):
         os.makedirs(log_path, exist_ok=True)
-    log_name_prefix = "sub-%s_ses-%s_%s" % (
-        subject,
-        session,
-        datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
-    )
-    logfile_path = os.path.join(log_path, log_name_prefix + ".log")
+    log_name_prefix = f'sub-{subject}_ses-{session}_{datetime.datetime.now().strftime("%Y%m%d-%H%M%S")}'
+    logfile_path = os.path.join(log_path, f"{log_name_prefix}.log")
     log_file = logging.LogFile(logfile_path, level=logging.INFO, filemode="w")
 
     exp_win = visual.Window(**config.EXP_WINDOW, monitor=config.EXP_MONITOR)
@@ -263,22 +257,23 @@ Thanks for your participation!"""
 
                 if shortcut_evt == "n":
                     # restart the task
-                    logging.exp(msg="task - %s: restart" % str(task))
+                    logging.exp(msg=f"task - {str(task)}: restart")
                     task.restart()
                     continue
                 elif shortcut_evt:
                     # abort/skip or quit
-                    logging.exp(msg="task - %s: abort" % str(task))
+                    logging.exp(msg=f"task - {str(task)}: abort")
                     break
                 else:  # task completed
-                    logging.exp(msg="task - %s: complete" % str(task))
+                    logging.exp(msg=f"task - {str(task)}: complete")
                     # send stop trigger/marker to MEG + Biopac (or anything else on parallel port)
                     break
 
 
             if record_movie:
                 out_fname = os.path.join(
-                    task.output_path, "%s_%s.mp4" % (task.output_fname_base, task.name)
+                    task.output_path,
+                    f"{task.output_fname_base}_{task.name}.mp4",
                 )
                 print(f"saving movie as {out_fname}")
                 exp_win.saveMovieFrames(out_fname, fps=10)
@@ -291,7 +286,7 @@ Thanks for your participation!"""
                 # add a delay between tasks to avoid remaining TTL to start next task
                 # do that only if the task was not aborted to save time
                 # there is anyway the duration of the instruction before listening to TTL
-                for i in range(DELAY_BETWEEN_TASK * config.FRAME_RATE):
+                for _ in range(DELAY_BETWEEN_TASK * config.FRAME_RATE):
                     exp_win.flip(clearBuffer=False)
 
         exp_win.saveFrameIntervals("exp_win_frame_intervals.txt")

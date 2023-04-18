@@ -28,7 +28,7 @@ class EmotionVideos(Task):
         if os.path.exists(videos_path):
             self.videos_path = videos_path
         else:
-            raise ValueError("Cannot find the videos in %s " % videos_path)
+            raise ValueError(f"Cannot find the videos in {videos_path} ")
 
         super().__init__(**kwargs)
 
@@ -90,7 +90,7 @@ class EmotionVideos(Task):
             wrapWidth=config.WRAP_WIDTH,
         )
 
-        for frameN in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
+        for _ in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)

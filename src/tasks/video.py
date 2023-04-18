@@ -31,7 +31,7 @@ and fixate the dot whenever it appears."""
         super().__init__(instruction=instruct, **kwargs)
         self.filepath = filepath
         if not os.path.exists(self.filepath):
-            raise ValueError("File %s does not exists" % self.filepath)
+            raise ValueError(f"File {self.filepath} does not exists")
 
     def _instructions(self, exp_win, ctl_win):
         screen_text = visual.TextStim(
@@ -60,10 +60,15 @@ and fixate the dot whenever it appears."""
             self.fixation_dot = fixation_dot(exp_win)
             try:
                 self.fixation_image = visual.ImageStim(
-                                        exp_win,
-                                        os.path.join("data", "videos", "fixations", "fixframe_" + str(exp_win.size[0]) + "_" + str(exp_win.size[1]) + ".jpg"),
-                                        size=(exp_win.size[0], exp_win.size[1]),
-                                        units='pix',
+                    exp_win,
+                    os.path.join(
+                        "data",
+                        "videos",
+                        "fixations",
+                        f"fixframe_{str(exp_win.size[0])}_{str(exp_win.size[1])}.jpg",
+                    ),
+                    size=(exp_win.size[0], exp_win.size[1]),
+                    units='pix',
                 )
             except:
                 self.fixation_image = visual.ImageStim(
@@ -73,7 +78,7 @@ and fixate the dot whenever it appears."""
                                         #size=(1280, 1024),
                                         units='pix',
                 )
-            #print(exp_win.size)
+                #print(exp_win.size)
 
         if self._inmovie_fixations:
             self.grey_bgd = visual.Rect(exp_win, size=exp_win.size, lineWidth=0,
@@ -152,7 +157,7 @@ and fixate the dot whenever it appears."""
             '''
             if self._startend_fixduration > 0:
                 if next_frame_time <= self._startend_fixduration or \
-                    next_frame_time >= self.movie_stim.duration-self._startend_fixduration:
+                        next_frame_time >= self.movie_stim.duration-self._startend_fixduration:
                     self.fixation_image.draw(exp_win)
                     #exp_win.clearBuffer(color=True, depth=True)
                     #for stim in self.fixation_dot:
@@ -191,11 +196,10 @@ and fixate the dot whenever it appears."""
                     })
                     fixation_on = False
 
-            if not self._inmovie_fixations:
-                if next_frame_num % 100 == 0:
-                    exp_win.logOnFlip(
-                        level=logging.EXP, msg="Frame %d at %f" % (next_frame_num, time.time()) # log frame time every 100 frames
-                    )
+            if not self._inmovie_fixations and next_frame_num % 100 == 0:
+                exp_win.logOnFlip(
+                    level=logging.EXP, msg="Frame %d at %f" % (next_frame_num, time.time()) # log frame time every 100 frames
+                )
 
             yield False
 
@@ -211,7 +215,7 @@ and fixate the dot whenever it appears."""
                 color="white",
                 wrapWidth=config.WRAP_WIDTH,
             )
-            for frameN in range(config.FRAME_RATE * 2):
+            for _ in range(config.FRAME_RATE * 2):
                 screen_text.draw(exp_win)
                 if ctl_win:
                     screen_text.draw(ctl_win)
@@ -220,7 +224,7 @@ and fixate the dot whenever it appears."""
             exp_win.logOnFlip(
                 level=logging.EXP, msg=" gaze validation: starting at %f" % time.time())
 
-            for frameN in range(config.FRAME_RATE * 1):
+            for _ in range(config.FRAME_RATE * 1):
                 self.startcue.draw(exp_win)
                 if ctl_win:
                     self.startcue.draw(ctl_win)
@@ -238,7 +242,7 @@ and fixate the dot whenever it appears."""
                     msg="marker position,%f,%f,%d,%d starting at %f"
                     % (marker_pos[0], marker_pos[1], pos[0], pos[1], time.time()))
 
-                for f in range(int(config.FRAME_RATE * self.marker_duration)):
+                for _ in range(int(config.FRAME_RATE * self.marker_duration)):
                     for stim in self.fixation_dot:
                         stim.draw(exp_win)
                         if ctl_win:

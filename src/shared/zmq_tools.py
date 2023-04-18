@@ -43,7 +43,7 @@ class ZMQ_handler(logging.Handler):
 
     def emit(self, record):
         record_dict = record.__dict__
-        record_dict["topic"] = "logging." + record.levelname.lower()
+        record_dict["topic"] = f"logging.{record.levelname.lower()}"
         try:
             self.socket.send(record_dict)
         except TypeError:
@@ -88,9 +88,7 @@ class Msg_Receiver(ZMQ_Socket):
                 status = recv_monitor_message(monitor)
                 if status["event"] == zmq.EVENT_CONNECTED:
                     break
-                elif status["event"] == zmq.EVENT_CONNECT_DELAYED:
-                    pass
-                else:
+                elif status["event"] != zmq.EVENT_CONNECT_DELAYED:
                     raise Exception("ZMQ connection failed")
             self.socket.disable_monitor()
         else:
@@ -163,7 +161,7 @@ class Msg_Streamer(ZMQ_Socket):
         require exposing the pyhton memoryview interface.
         """
         assert deprecated == (), "Depracted use of send()"
-        assert "topic" in payload, "`topic` field required in {}".format(payload)
+        assert "topic" in payload, f"`topic` field required in {payload}"
 
         if "__raw_data__" not in payload:
             # IMPORTANT: serialize first! Else if there is an exception
@@ -240,9 +238,7 @@ class Msg_Pair_Client(Msg_Pair_Base):
                 status = recv_monitor_message(monitor)
                 if status["event"] == zmq.EVENT_CONNECTED:
                     break
-                elif status["event"] == zmq.EVENT_CONNECT_DELAYED:
-                    pass
-                else:
+                elif status["event"] != zmq.EVENT_CONNECT_DELAYED:
                     raise Exception("ZMQ connection failed")
             self.socket.disable_monitor()
         else:

@@ -45,7 +45,7 @@ class FLoc(Task):
             wrapWidth=1.2,
         )
 
-        for frameN in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
+        for _ in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)
@@ -285,7 +285,7 @@ def randomize_carefully(elems, n_repeat=2):
     """
     s = set(elems)
     res = []
-    for n in range(n_repeat):
+    for _ in range(n_repeat):
         if res:
             # Avoid the last placed element
             lst = list(s.difference({res[-1]}))

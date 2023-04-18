@@ -13,10 +13,7 @@ globalClock = core.Clock()
 
 def get_ttl():
     allKeys = event.getKeys(MR_settings["sync"])
-    for key in allKeys:
-        if key.lower() in MR_settings["sync"]:
-            return True
-    return False
+    return any(key.lower() in MR_settings["sync"] for key in allKeys)
 
 
 # blocking function (iterator)

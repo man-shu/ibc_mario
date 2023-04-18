@@ -34,7 +34,7 @@ Try to remember the items and their location on the screen."""
             wrapWidth=config.WRAP_WIDTH,
         )
 
-        for frameN in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
+        for _ in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)
@@ -47,7 +47,7 @@ Try to remember the items and their location on the screen."""
         exp_win.logOnFlip(
             level=logging.EXP, msg="memory: task starting at %f" % time.time()
         )
-        for frameN in range(config.FRAME_RATE * BASELINE_BEGIN):
+        for _ in range(config.FRAME_RATE * BASELINE_BEGIN):
             yield ()
         for trial in trials:
             image_path = trial["image_path"]
@@ -58,13 +58,13 @@ Try to remember the items and their location on the screen."""
                 msg="memory: display %s in quadrant %d"
                 % (image_path, trial["quadrant"]),
             )
-            for frameN in range(config.FRAME_RATE * STIMULI_DURATION):
+            for _ in range(config.FRAME_RATE * STIMULI_DURATION):
                 img.draw(exp_win)
                 if ctl_win:
                     img.draw(ctl_win)
                 yield ()
             exp_win.logOnFlip(level=logging.EXP, msg="memory: rest")
-            for frameN in range(config.FRAME_RATE * ISI):
+            for _ in range(config.FRAME_RATE * ISI):
                 yield ()
-        for frameN in range(config.FRAME_RATE * BASELINE_END):
+        for _ in range(config.FRAME_RATE * BASELINE_END):
             yield ()

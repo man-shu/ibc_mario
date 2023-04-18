@@ -20,7 +20,7 @@ exclude_list = [(2,2),(7,2)] # all levels 4 are excluded below
 # code adaptive design for learning phase
 
 def get_tasks(parsed):
-    bids_sub = "sub-%s" % parsed.subject
+    bids_sub = f"sub-{parsed.subject}"
     savestate_path = os.path.abspath(os.path.join(parsed.output, "sourcedata", bids_sub, f"{bids_sub}_task-mario_savestate.json"))
 
     # check for a "savestate"

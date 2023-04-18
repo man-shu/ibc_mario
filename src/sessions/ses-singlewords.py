@@ -1,7 +1,7 @@
 
 def get_tasks(parsed):
     from ..tasks import language, task_base
-    TASKS = [
+    return [
         language.WordFamiliarity(
             f"{TRIPLET_DATA_PATH}/words_designs/sub-{parsed.subject}_ses-{parsed.session}_run-{run+1:02d}_design.tsv",
             name="task-singlewords",
@@ -9,7 +9,6 @@ def get_tasks(parsed):
         )
         for run in range(N_RUNS_PER_SESSION)
     ]
-    return TASKS
 
 
 TRIPLET_DATA_PATH = "data/language/triplets"
@@ -50,9 +49,9 @@ def generate_design_file(subject, all_words, pilot=False, sm_feat=False):
     np.random.seed(0)
     isi_set = np.random.random_sample(N_TRIALS_PER_RUN)*ISI_JITTER + ISI
     # seed numpy with subject id to have reproducible design generation
-    seed = int(
-        hashlib.sha1(("%s" % (subject)).encode("utf-8")).hexdigest(), 16
-    ) % (2 ** 32 - 1)
+    seed = int(hashlib.sha1(f"{subject}".encode("utf-8")).hexdigest(), 16) % (
+        2**32 - 1
+    )
     print("seed", seed)
     np.random.seed(seed)
 
@@ -79,16 +78,42 @@ def generate_design_file(subject, all_words, pilot=False, sm_feat=False):
             run_words['block_index'] * (FEATURES_INSTRUCTION_DURATION + POST_FEATURES_INSTRUCTION_ISI)
         run_words['duration'] = STIMULI_DURATION
         run_words = pandas.concat(
-            sum([[pandas.DataFrame({
-                    'trial_type': ['feature_question'],
-                    'onset': [run_words.onset[block*N_TRIALS_PER_BLOCK] - (FEATURES_INSTRUCTION_DURATION + POST_FEATURES_INSTRUCTION_ISI)],
-                    'duration': [FEATURES_INSTRUCTION_DURATION],
-                    'sensorimotor_feature': [run_words.sensorimotor_feature[block*N_TRIALS_PER_BLOCK]],
-                    'block_index': [block],
-                    'isi': [POST_FEATURES_INSTRUCTION_ISI],
-                    }) if sm_feat else None,
-                  run_words[block*N_TRIALS_PER_BLOCK:(block+1)*N_TRIALS_PER_BLOCK]] \
-              for block in range(int(np.ceil(len(run_words)/25)))], []))
+            sum(
+                (
+                    [
+                        pandas.DataFrame(
+                            {
+                                'trial_type': ['feature_question'],
+                                'onset': [
+                                    run_words.onset[block * N_TRIALS_PER_BLOCK]
+                                    - (
+                                        FEATURES_INSTRUCTION_DURATION
+                                        + POST_FEATURES_INSTRUCTION_ISI
+                                    )
+                                ],
+                                'duration': [FEATURES_INSTRUCTION_DURATION],
+                                'sensorimotor_feature': [
+                                    run_words.sensorimotor_feature[
+                                        block * N_TRIALS_PER_BLOCK
+                                    ]
+                                ],
+                                'block_index': [block],
+                                'isi': [POST_FEATURES_INSTRUCTION_ISI],
+                            }
+                        )
+                        if sm_feat
+                        else None,
+                        run_words[
+                            block
+                            * N_TRIALS_PER_BLOCK : (block + 1)
+                            * N_TRIALS_PER_BLOCK
+                        ],
+                    ]
+                    for block in range(int(np.ceil(len(run_words) / 25)))
+                ),
+                [],
+            )
+        )
 
 
         session = run // N_RUNS_PER_SESSION + 1

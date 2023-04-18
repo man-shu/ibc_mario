@@ -194,7 +194,7 @@ class EyetrackerCalibration_targets(Task):
                     msg="eyetracker_calibration: starting at %f" % time.time(),
                 )
 
-            for frameN in range(config.FRAME_RATE * STARTCUE_DURATION):
+            for _ in range(config.FRAME_RATE * STARTCUE_DURATION):
                 self.startcue.draw(exp_win)
                 yield True
 
@@ -247,7 +247,7 @@ class EyetrackerCalibration_targets(Task):
                     f"validating on {len(self._pupils_list)} pupils and {len(self.all_refs_per_flip)} markers"
                 )
 
-                print('Ǹumber of received gaze: ', str(len(self._gaze_list)))
+                print('Ǹumber of received gaze: ', len(self._gaze_list))
                 val_qc = self.eyetracker.validate(self._gaze_list, self.all_refs_per_flip)
 
                 # If self.feedback = True, display calib results on screen
@@ -267,7 +267,7 @@ class EyetrackerCalibration_targets(Task):
                                                      lineWidth=0, fillColor=fill_col))
 
                 if self.feedback:
-                    for frameN in range(config.FRAME_RATE * FEEDBACK_DURATION):
+                    for _ in range(config.FRAME_RATE * FEEDBACK_DURATION):
                         for qc_dot in qc_dots:
                             qc_dot.draw(exp_win)
                         yield True
@@ -277,7 +277,7 @@ class EyetrackerCalibration_targets(Task):
                                         #colorSpace='rgb', fillColor=(-1, -1, -1))
                                         colorSpace='rgb', fillColor=(-0.2, -0.2, -0.2))
 
-                for frameN in range(5):
+                for _ in range(5):
                     black_bgd.draw(exp_win)
                     yield True
 
@@ -294,15 +294,16 @@ class EyetrackerCalibration_targets(Task):
                                         #colorSpace='rgb', fillColor=(-1, -1, -1))
                                         colorSpace='rgb', fillColor=(-0.2, -0.2, -0.2))
 
-                for frameN in range(5):
+                for _ in range(5):
                     black_bgd.draw(exp_win)
                     yield True
 
                 self.eyetracker.calibrate(self._pupils_list, self.all_refs_per_flip)
 
                 while True:
-                    notes = getattr(self.eyetracker, '_last_calibration_notification',None)
-                    if notes:
+                    if notes := getattr(
+                        self.eyetracker, '_last_calibration_notification', None
+                    ):
                         calibration_success = notes['topic'].startswith("notify.calibration.successful")
                         if not calibration_success:
                             print('#### CALIBRATION FAILED: restart with <c> ####')
@@ -360,7 +361,7 @@ While awaiting for the calibration to start you will be asked to roll your eyes.
             wrapWidth=config.WRAP_WIDTH,
         )
 
-        for frameN in range(config.FRAME_RATE * INSTRUCTION_DURATION):
+        for _ in range(config.FRAME_RATE * INSTRUCTION_DURATION):
             screen_text.draw(exp_win)
             screen_text.draw(ctl_win)
             yield True
@@ -397,10 +398,7 @@ While awaiting for the calibration to start you will be asked to roll your eyes.
         while not calibration_success:
             while True:
                 allKeys = event.getKeys([CALIBRATE_HOTKEY])
-                start_calibration = False
-                for key in allKeys:
-                    if key == CALIBRATE_HOTKEY:
-                        start_calibration = True
+                start_calibration = any(key == CALIBRATE_HOTKEY for key in allKeys)
                 if start_calibration:
                     break
                 instructions.draw(exp_win)
@@ -484,8 +482,9 @@ While awaiting for the calibration to start you will be asked to roll your eyes.
             )
             self.eyetracker.calibrate(self._pupils_list, self.all_refs_per_flip)
             while True:
-                notes = getattr(self.eyetracker, '_last_calibration_notification',None)
-                if notes:
+                if notes := getattr(
+                    self.eyetracker, '_last_calibration_notification', None
+                ):
                     calibration_success = notes['topic'].startswith("notify.calibration.successful")
                     if not calibration_success:
                         print('#### CALIBRATION FAILED: restart with <c> ####')
@@ -591,7 +590,7 @@ class EyeTrackerClient(threading.Thread):
         self.output_path = output_path
         self.output_fname_base = output_fname_base
         self.record_dir = os.path.join(
-            self.output_path, self.output_fname_base + ".pupil"
+            self.output_path, f"{self.output_fname_base}.pupil"
         )
         os.makedirs(self.record_dir, exist_ok=True)
 
@@ -603,7 +602,7 @@ class EyeTrackerClient(threading.Thread):
 
         pupil_logfile = open(os.path.join(self.record_dir, "pupil.log"), "wb")
         pupil_env = os.environ.copy()
-        pupil_env.update({'ARV_DEBUG':'all:2'})
+        pupil_env['ARV_DEBUG'] = 'all:2'
 
         self._pupil_process = Popen(
             [
@@ -650,7 +649,7 @@ class EyeTrackerClient(threading.Thread):
                 "name": "Recorder",
                 "args": {
                     "rec_root_dir": self.record_dir,
-                    "session_name": self.output_fname_base + ".pupil",
+                    "session_name": f"{self.output_fname_base}.pupil",
                     "raw_jpeg": False,
                     "record_eye": True,
                 },
@@ -717,7 +716,7 @@ class EyeTrackerClient(threading.Thread):
     def send_recv_notification(self, n):
         # REQ REP requires lock step communication with multipart msg (topic,msgpack_encoded dict)
         self._req_socket.send_multipart(
-            (bytes("notify.%s" % n["subject"], "utf-8"), msgpack.dumps(n))
+            (bytes(f'notify.{n["subject"]}', "utf-8"), msgpack.dumps(n))
         )
         return self._req_socket.recv()
 
@@ -780,7 +779,7 @@ class EyeTrackerClient(threading.Thread):
                 continue
             with self.pause_cond:
                 msg = self.pupil_monitor.recv()
-                if not msg is None:
+                if msg is not None:
                     topic, tmp = msg
                     with self.lock:
                         if topic.startswith("pupil"):
@@ -831,7 +830,7 @@ class EyeTrackerClient(threading.Thread):
 
         for i in range(len(ref_list)):
             m = ref_list[i]
-            if not (m['norm_pos']) in position_list:
+            if m['norm_pos'] not in position_list:
                 markers_dict[count] = {
                     'norm_pos': m['norm_pos'],
                     'screen_pos': m['screen_pos'],
@@ -888,7 +887,7 @@ class EyeTrackerClient(threading.Thread):
 
         for count in range(len(markers_dict.keys())):
             m = markers_dict[count]
-            print('Marker ' + str(count) + ', Normalized position: ' +  str(m['norm_pos']))
+            print(f'Marker {str(count)}, Normalized position: ' + str(m['norm_pos']))
             # transform marker's normalized position into dim = (3,) vector in pixel space
             m_vecpos = np.concatenate(((np.array(m['norm_pos']) - 0.5)*(1280, 1024), np.array([dist_in_pix])), axis=0)
 
@@ -920,7 +919,9 @@ class EyeTrackerClient(threading.Thread):
                 fair = np.sum((distances >= 0.5)*(distances < 1.5)) / num_gz
                 poor = np.sum(distances >= 1.5) / num_gz
 
-                print('Total gaze:' + str(num_gz) + ' , Good:' + str(good) + ' , Fair:' + str(fair) + ' , Poor:' + str(poor))
+                print(
+                    f'Total gaze:{num_gz} , Good:{str(good)} , Fair:{str(fair)} , Poor:{str(poor)}'
+                )
                 val_qc.append({
                     'marker': count,
                     'norm_pos': m['norm_pos'],
@@ -1019,8 +1020,7 @@ class GazeDrawer:
 
 def read_pl_data(fname):
     with open(fname, "rb") as fh:
-        for data in msgpack.Unpacker(fh, raw=False, use_list=False):
-            yield (data)
+        yield from msgpack.Unpacker(fh, raw=False, use_list=False)
 
 
 def fixation_dot(win, **kwargs):

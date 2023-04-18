@@ -29,12 +29,13 @@ levels_scenario = [
 #random.shuffle(levels_scenario)  # randomize order
 
 TASKS = sum(
-    [
+    (
         [
             videogame.VideoGameMultiLevel(
-                state_names=[l for l,s in levels_scenario],
-                scenarii=[s for l,s in levels_scenario]
-                ,  # this scenario repeats the same level
+                state_names=[l for l, s in levels_scenario],
+                scenarii=[
+                    s for l, s in levels_scenario
+                ],  # this scenario repeats the same level
                 repeat_scenario=True,
                 max_duration=10
                 * 60,  # if when level completed or dead we exceed that time in secs, stop the task
@@ -45,6 +46,6 @@ TASKS = sum(
             task_base.Pause(),
         ]
         for run in range(5)
-    ],
+    ),
     [],
 )

@@ -4,11 +4,7 @@ from psychopy import core
 import os, glob
 
 def check_power_plugged():
-    battery = psutil.sensors_battery()
-    if battery:
-        return battery.power_plugged
-    else:
-        return True
+    return battery.power_plugged if (battery := psutil.sensors_battery()) else True
 
 def wait_until(clock, deadline, hogCPUperiod=0.1, keyboard_accuracy=.0005):
     if deadline < clock.getTime():
@@ -43,13 +39,17 @@ def wait_until_yield(clock, deadline, hogCPUperiod=0.1, keyboard_accuracy=.0005)
 
 def get_subject_soundcheck_video(subject):
     setup_video_path = glob.glob(
-        os.path.join("data", "videos", "subject_setup_videos", "sub-%s_*" % subject)
+        os.path.join(
+            "data", "videos", "subject_setup_videos", f"sub-{subject}_*"
+        )
     )
-    if not len(setup_video_path):
-        return os.path.join(
-                "data",
-                "videos",
-                "subject_setup_videos",
-                "sub-default_setup_video.mp4",
-            )
-    return setup_video_path[0]
+    return (
+        setup_video_path[0]
+        if len(setup_video_path)
+        else os.path.join(
+            "data",
+            "videos",
+            "subject_setup_videos",
+            "sub-default_setup_video.mp4",
+        )
+    )

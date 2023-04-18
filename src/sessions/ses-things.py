@@ -60,10 +60,10 @@ def generate_design_file(subject, session):
 
     design = pandas.DataFrame()
 
-    print("%s-%s" % (subject, session))
+    print(f"{subject}-{session}")
     seed = int(
-        hashlib.sha1(("%s-%s" % (subject, session)).encode("utf-8")).hexdigest(), 16
-    ) % (2 ** 32 - 1)
+        hashlib.sha1(f"{subject}-{session}".encode("utf-8")).hexdigest(), 16
+    ) % (2**32 - 1)
     print("seed", seed)
     np.random.seed(seed)
 

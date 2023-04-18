@@ -27,7 +27,7 @@ Press the button when you see an unrecognizable object that was generated."""
         ):
             self.images_path = images_path
         else:
-            raise ValueError("Cannot find the listed images in %s " % images_path)
+            raise ValueError(f"Cannot find the listed images in {images_path} ")
 
     def _setup(self, exp_win):
         self.fixation_cross = visual.ImageStim(
@@ -39,12 +39,15 @@ Press the button when you see an unrecognizable object that was generated."""
 
         # preload all images
         self._stimuli = []
-        for trial in self.design:
-            self._stimuli.append(visual.ImageStim(
-                exp_win, os.path.join(self.images_path, trial["image_path"]),
+        self._stimuli.extend(
+            visual.ImageStim(
+                exp_win,
+                os.path.join(self.images_path, trial["image_path"]),
                 size=10,
                 units='deg',
-            ))
+            )
+            for trial in self.design
+        )
         self.trials = data.TrialHandler(self.design, 1, method="sequential")
         self.duration = len(self.design)
         self._progress_bar_refresh_rate = 2  # 2 flips per trial
@@ -59,7 +62,7 @@ Press the button when you see an unrecognizable object that was generated."""
             wrapWidth=config.WRAP_WIDTH,
         )
 
-        for frameN in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
+        for _ in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)

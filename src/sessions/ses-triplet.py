@@ -5,7 +5,7 @@ def get_tasks(parsed):
     from ..tasks import language, task_base
     from psychopy import logging
     import json
-    bids_sub = "sub-%s" % parsed.subject
+    bids_sub = f"sub-{parsed.subject}"
     savestate_path = os.path.abspath(os.path.join(parsed.output, "sourcedata", bids_sub, f"{bids_sub}_task-triplet_savestate.json"))
 
     # check for a "savestate"
@@ -83,9 +83,9 @@ def generate_design_file(subject, all_triplets, pilot=False):
     isi_set = np.random.random_sample(N_TRIALS_PER_RUN)*ISI_JITTER - ISI_JITTER/2 + ISI
 
     # seed numpy with subject id to have reproducible design generation
-    seed = int(
-        hashlib.sha1(("%s" % (subject)).encode("utf-8")).hexdigest(), 16
-    ) % (2 ** 32 - 1)
+    seed = int(hashlib.sha1(f"{subject}".encode("utf-8")).hexdigest(), 16) % (
+        2**32 - 1
+    )
     print("seed", seed)
     np.random.seed(seed)
 

@@ -7,16 +7,44 @@ import pandas
 
 def selected_levels():
 
-    all_levels =  (
-        [(1, f"Level{lev}") for lev in range(1,5)] + [(1, 'Fortress')]+[(1, f"Level{lev}") for lev in range(5,7)] + [(1, 'Airship')] +
-        [(2, f"Level{lev}") for lev in range(1,3)] + [(2, 'Fortress')]+[(2, f"Level{lev}") for lev in range(3,6)] + [(2, 'Airship')] +
-        [(3, f"Level{lev}") for lev in range(1,4)] + [(3, 'Fortress1')]+[(3, f"Level{lev}") for lev in range(4,8)] + [(3, 'Fortress2')]+[(3, f"Level{lev}") for lev in range(8,10)] + [(3, 'Airship')] +
-        [(4, f"Level{lev}") for lev in range(1,4)] + [(4, 'Fortress1')]+[(4, f"Level{lev}") for lev in range(4,7)] + [(4, 'Fortress2'), (4, 'Airship')] +
-        [(5, f"Level{lev}") for lev in range(1,4)] + [(5, 'Fortress1'), (5, 'Tower')]+[(5, f"Level{lev}") for lev in range(4,8)] + [(5, 'Fortress2')] + [(5, f"Level{lev}") for lev in range(8,10)]  + [(5, 'Airship')] +
-        [(6, f"Level{lev}") for lev in range(1,4)] + [(6, 'Fortress1')]+[(6, f"Level{lev}") for lev in range(4,8)] + [(6, 'Fortress2')] + [(6, f"Level{lev}") for lev in range(8,11)]  + [(6, 'Fortress3'), (6, 'Airship')] +
-        [(7, f"Level{lev}") for lev in range(1,6)] + [(7, 'PiranhaPlant1'), (7, 'Fortress1')]+[(7, f"Level{lev}") for lev in range(6,10)] + [(7, 'Fortress2'), (7, 'PiranhaPlant2'), (7, 'Airship')] +
-        [(8, f"Level{lev}") for lev in range(1,3)] + [(8, 'Fortress')])
-    return all_levels
+    return (
+        [(1, f"Level{lev}") for lev in range(1, 5)]
+        + [(1, 'Fortress')]
+        + [(1, f"Level{lev}") for lev in range(5, 7)]
+        + [(1, 'Airship')]
+        + [(2, f"Level{lev}") for lev in range(1, 3)]
+        + [(2, 'Fortress')]
+        + [(2, f"Level{lev}") for lev in range(3, 6)]
+        + [(2, 'Airship')]
+        + [(3, f"Level{lev}") for lev in range(1, 4)]
+        + [(3, 'Fortress1')]
+        + [(3, f"Level{lev}") for lev in range(4, 8)]
+        + [(3, 'Fortress2')]
+        + [(3, f"Level{lev}") for lev in range(8, 10)]
+        + [(3, 'Airship')]
+        + [(4, f"Level{lev}") for lev in range(1, 4)]
+        + [(4, 'Fortress1')]
+        + [(4, f"Level{lev}") for lev in range(4, 7)]
+        + [(4, 'Fortress2'), (4, 'Airship')]
+        + [(5, f"Level{lev}") for lev in range(1, 4)]
+        + [(5, 'Fortress1'), (5, 'Tower')]
+        + [(5, f"Level{lev}") for lev in range(4, 8)]
+        + [(5, 'Fortress2')]
+        + [(5, f"Level{lev}") for lev in range(8, 10)]
+        + [(5, 'Airship')]
+        + [(6, f"Level{lev}") for lev in range(1, 4)]
+        + [(6, 'Fortress1')]
+        + [(6, f"Level{lev}") for lev in range(4, 8)]
+        + [(6, 'Fortress2')]
+        + [(6, f"Level{lev}") for lev in range(8, 11)]
+        + [(6, 'Fortress3'), (6, 'Airship')]
+        + [(7, f"Level{lev}") for lev in range(1, 6)]
+        + [(7, 'PiranhaPlant1'), (7, 'Fortress1')]
+        + [(7, f"Level{lev}") for lev in range(6, 10)]
+        + [(7, 'Fortress2'), (7, 'PiranhaPlant2'), (7, 'Airship')]
+        + [(8, f"Level{lev}") for lev in range(1, 3)]
+        + [(8, 'Fortress')]
+    )
     #return [lev for lev in all_levels if not 'Piranha' in lev[1]]
 
 worlds = 1
@@ -32,13 +60,20 @@ MARIOSTARS_KEYSET = ["b", "y", "1", "2", "u", "d", "l", "r", "3", "4", "5", "6"]
 
 def generate_design_file(subject):
 
-    seed = int(
-        hashlib.sha1(("%s" % (subject)).encode("utf-8")).hexdigest(), 16
-    ) % (2 ** 32 - 1) + 42 # add a fixed offset for the designs to differ from mario phase2
+    seed = (
+        int(hashlib.sha1(f"{subject}".encode("utf-8")).hexdigest(), 16)
+        % (2**32 - 1)
+    ) + 42
     print("seed", seed)
     random.seed(seed)
 
-    subject_levels = selected_levels() + sum([random.sample(selected_levels(),len(all_levels)) for rep in range(n_repetitions)],[])
+    subject_levels = selected_levels() + sum(
+        (
+            random.sample(selected_levels(), len(all_levels))
+            for _ in range(n_repetitions)
+        ),
+        [],
+    )
     subject_design = pandas.DataFrame(subject_levels, columns=('world','level'))
     out_fname = os.path.join(
         'data',
@@ -76,7 +111,7 @@ def get_tasks(parsed):
     def smb3_completion_fn(env):
         return env.data['killed'] == 0
 
-    bids_sub = "sub-%s" % parsed.subject
+    bids_sub = f"sub-{parsed.subject}"
 
     design_path = os.path.join(
         'data',

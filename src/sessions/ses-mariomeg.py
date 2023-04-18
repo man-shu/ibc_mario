@@ -26,7 +26,7 @@ def get_tasks(parsed):
             os.path.join(os.getcwd(), "data", "videogames", "mario")
     )
 
-    bids_sub = "sub-%s" % parsed.subject
+    bids_sub = f"sub-{parsed.subject}"
 
     design_path = os.path.join(
         'data',
@@ -50,7 +50,7 @@ def get_tasks(parsed):
     for run in range(10):
 
         next_levels = [f"Level{world}-{level}" for idx,(world,level) in design[savestate['index']:savestate['index']+20].iterrows()]
-        if len(next_levels) == 0:
+        if not next_levels:
             print('Stable phase completed, no more levels to play')
             return []
 

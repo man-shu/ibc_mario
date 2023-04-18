@@ -16,13 +16,19 @@ n_repetitions = 50 # very high number, will never reach that point
 
 def generate_design_file(subject):
 
-    seed = int(
-        hashlib.sha1(("%s" % (subject)).encode("utf-8")).hexdigest(), 16
-    ) % (2 ** 32 - 1)
+    seed = int(hashlib.sha1(f"{subject}".encode("utf-8")).hexdigest(), 16) % (
+        2**32 - 1
+    )
     print("seed", seed)
     random.seed(seed)
 
-    subject_levels = sum([random.sample(all_levels,len(all_levels)) for rep in range(n_repetitions)],[])
+    subject_levels = sum(
+        (
+            random.sample(all_levels, len(all_levels))
+            for _ in range(n_repetitions)
+        ),
+        [],
+    )
     subject_design = pandas.DataFrame(subject_levels, columns=('world','level'))
     out_fname = os.path.join(
         'data',
@@ -56,7 +62,7 @@ def get_tasks(parsed):
             os.path.join(os.getcwd(), "data", "videogames", "mario")
     )
 
-    bids_sub = "sub-%s" % parsed.subject
+    bids_sub = f"sub-{parsed.subject}"
 
     design_path = os.path.join(
         'data',
@@ -80,7 +86,7 @@ def get_tasks(parsed):
     for run in range(10):
 
         next_levels = [f"Level{world}-{level}" for idx,(world,level) in design[savestate['index']:savestate['index']+20].iterrows()]
-        if len(next_levels) == 0:
+        if not next_levels:
             print('Stable phase completed, no more levels to play')
             return []
 

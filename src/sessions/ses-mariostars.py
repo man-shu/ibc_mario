@@ -18,13 +18,20 @@ MARIOSTARS_KEYSET = ["b", "y", "1", "2", "u", "d", "l", "r", "3", "4", "5", "6"]
 
 def generate_design_file(subject):
 
-    seed = int(
-        hashlib.sha1(("%s" % (subject)).encode("utf-8")).hexdigest(), 16
-    ) % (2 ** 32 - 1) + 42 # add a fixed offset for the designs to differ from mario phase2
+    seed = (
+        int(hashlib.sha1(f"{subject}".encode("utf-8")).hexdigest(), 16)
+        % (2**32 - 1)
+    ) + 42
     print("seed", seed)
     random.seed(seed)
 
-    subject_levels = sum([random.sample(all_levels,len(all_levels)) for rep in range(n_repetitions)],[])
+    subject_levels = sum(
+        (
+            random.sample(all_levels, len(all_levels))
+            for _ in range(n_repetitions)
+        ),
+        [],
+    )
     subject_design = pandas.DataFrame(subject_levels, columns=('world','level'))
     out_fname = os.path.join(
         'data',
@@ -59,7 +66,7 @@ def get_tasks(parsed):
             os.path.join(os.getcwd(), "data", "videogames", "mariostars")
     )
 
-    bids_sub = "sub-%s" % parsed.subject
+    bids_sub = f"sub-{parsed.subject}"
 
     design_path = os.path.join(
         'data',

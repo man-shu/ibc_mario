@@ -38,7 +38,7 @@ def _onPygletKeyRelease(symbol, modifier):
     global _keyReleaseBuffer
     keyTime = core.getTime()
     key = pyglet.window.key.symbol_string(symbol).lower().lstrip("_").lstrip("NUM_")
-    logging.data("Keyrelease: %s" % key)
+    logging.data(f"Keyrelease: {key}")
     _keyReleaseBuffer.append((key, keyTime))
 
 import sounddevice
@@ -182,7 +182,7 @@ class VideoGameBase(Task):
         if ctl_win:
             self.game_vis_stim.draw(ctl_win)
         self.game_sound.put(sound_block)
-        if not self.game_sound.status == constants.PLAYING:
+        if self.game_sound.status != constants.PLAYING:
             exp_win.callOnFlip(self.game_sound.play)  # start sound only at flip
 
     def _stop(self, exp_win, ctl_win):
@@ -285,7 +285,7 @@ class VideoGame(VideoGameBase):
             if not os.path.exists(self.movie_path):
                 break
             nnn += 1
-        logging.exp("VideoGame: recording movie in %s" % self.movie_path)
+        logging.exp(f"VideoGame: recording movie in {self.movie_path}")
         self.emulator.record_movie(self.movie_path)
 
     def _handle_controller_presses(self, exp_win):
@@ -385,7 +385,7 @@ class VideoGame(VideoGameBase):
 
     def _set_key_handler(self, exp_win):
         # activate repeat keys
-        self.pressed_keys = dict()
+        self.pressed_keys = {}
         exp_win.winHandle.on_key_press = _onPygletKeyPress
         exp_win.winHandle.on_key_release = _onPygletKeyRelease
 
@@ -432,7 +432,7 @@ class VideoGame(VideoGameBase):
             text.draw(exp_win)
             yield i < 3
         # clear screen
-        for i in range(2):
+        for _ in range(2):
             yield True
 
     def _questionnaire(self, exp_win, ctl_win, questions):
@@ -443,38 +443,36 @@ class VideoGame(VideoGameBase):
         bullets = []
         responses = []
         texts = []
-        legends = []
         y_spacing = 80
         win_width = exp_win.size[0]
         scales_block_x = win_width * 0.25
         scales_block_y = len(questions) // 2 * y_spacing
         extent = win_width * 0.2
 
-        # add legends to Likert scale
-        legends.append(visual.TextStim(
-            exp_win,
-            text = 'Disagree',
-            units="pix",
-            pos=(scales_block_x - extent*0.75, scales_block_y*1.1),
-            wrapWidth= win_width * 0.5,
-            height= y_spacing / 3,
-            anchorHoriz="right",
-            alignText="right",
-            bold=True
-        ))
-        legends.append(visual.TextStim(
-            exp_win,
-            text = 'Agree',
-            units="pix",
-            pos=(scales_block_x + extent*1.15, scales_block_y*1.1),
-            wrapWidth= win_width * 0.5,
-            height= y_spacing / 3,
-            anchorHoriz="right",
-            alignText="right",
-            bold=True
-        ))
-
-
+        legends = [
+            visual.TextStim(
+                exp_win,
+                text='Disagree',
+                units="pix",
+                pos=(scales_block_x - extent * 0.75, scales_block_y * 1.1),
+                wrapWidth=win_width * 0.5,
+                height=y_spacing / 3,
+                anchorHoriz="right",
+                alignText="right",
+                bold=True,
+            ),
+            visual.TextStim(
+                exp_win,
+                text='Agree',
+                units="pix",
+                pos=(scales_block_x + extent * 1.15, scales_block_y * 1.1),
+                wrapWidth=win_width * 0.5,
+                height=y_spacing / 3,
+                anchorHoriz="right",
+                alignText="right",
+                bold=True,
+            ),
+        ]
         active_question = 0
 
         # create all stimuli
@@ -569,9 +567,7 @@ class VideoGame(VideoGameBase):
                     "value": responses[active_question]
                 })
 
-            exp_win.logOnFlip(
-                level=logging.EXP,
-                msg="level ratings %s" % responses)
+            exp_win.logOnFlip(level=logging.EXP, msg=f"level ratings {responses}")
             for q_n, (txt, line, bullet_q) in enumerate(zip(texts, lines, bullets)):
                 #txt.bold = q_n == active_question
                 txt._pygletTextObj.set_style('bold', q_n == active_question)
@@ -626,7 +622,7 @@ class VideoGame(VideoGameBase):
                     msg="nlevel: %d, question: %s, answer: %d"
                     % (self._nlevels, question, value),
                 )
-                for i in range(config.FRAME_RATE):
+                for _ in range(config.FRAME_RATE):
                     yield True
                 self.pressed_keys.clear()
                 break
@@ -693,11 +689,13 @@ class VideoGameMultiLevel(VideoGame):
                 )
 
                 self._nlevels += 1
-                if self._nlevels > 1:
-                    if self._show_instruction_between_repetitions:
-                        yield from self._instructions(exp_win, ctl_win)
+                if (
+                    self._nlevels > 1
+                    and self._show_instruction_between_repetitions
+                ):
+                    yield from self._instructions(exp_win, ctl_win)
 
-                for n_repeat in range(self._n_repeats_level):
+                for _ in range(self._n_repeats_level):
                     self._first_frame = self.emulator.reset()
 
                     self._set_recording_file()
@@ -747,15 +745,15 @@ class VideoGameReplay(VideoGameBase):
         self.scenario = scenario
         self.movie_filename = movie_filename
         if not os.path.exists(self.movie_filename):
-            raise ValueError("file %s does not exists" % self.movie_filename)
+            raise ValueError(f"file {self.movie_filename} does not exists")
 
     def instructions(self, exp_win, ctl_win):
-        instruction_text = "You are going to watch someone play %s." % self.game_name
+        instruction_text = f"You are going to watch someone play {self.game_name}."
         screen_text = visual.TextStim(
             exp_win, text=instruction_text, alignText="center", color="white"
         )
 
-        for frameN in range(config.FRAME_RATE * INSTRUCTION_DURATION):
+        for _ in range(config.FRAME_RATE * INSTRUCTION_DURATION):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)
@@ -786,9 +784,7 @@ class VideoGameReplay(VideoGameBase):
         while self.movie.step():
             keys = []
             for p in range(self.movie.players):
-                for i in range(self.emulator.num_buttons):
-                    keys.append(self.movie.get_key(i, p))
-
+                keys.extend(self.movie.get_key(i, p) for i in range(self.emulator.num_buttons))
             _obs, _rew, _done, _info = self.emulator.step(keys)
 
             total_reward += _rew

@@ -19,7 +19,7 @@ def get_tasks(parsed):
     )
 
     sub_design = pd.read_csv(sub_design_filename, dtype = {"session" : "str"}, sep="\t", index_col=0)
-    bids_sub = "sub-%s" % parsed.subject
+    bids_sub = f"sub-{parsed.subject}"
     savestate_path = os.path.abspath(os.path.join(parsed.output, "sourcedata",bids_sub, f"{bids_sub}_phase-stable_task-emotionvideos_savestate.json"))
 
     # check for a "savestate"
@@ -29,7 +29,7 @@ def get_tasks(parsed):
     else:
         savestate = {"index": 0}
 
-    for run, design in enumerate(range(savestate['index'], len(sub_design))):
+    for _ in range(savestate['index'], len(sub_design)):
         #load design file for the run according to each participant predefine runs order
         next_run = os.path.join(
             EMOTION_DATA_PATH,
@@ -96,7 +96,7 @@ def repeat_gifs(path_to_gifs = VIDEOS_PATH, new_path_to_gifs=REPEATED_VIDEOS_PAT
                 repetition.append(time_to_repeat//row.duration)
             else:
                 repetition.append(duration_min//row.duration)
-        elif row.duration >= duration_min:
+        else:
             repetition.append(0)
 
     gifs_list['repetition'] = repetition
@@ -109,9 +109,8 @@ def repeat_gifs(path_to_gifs = VIDEOS_PATH, new_path_to_gifs=REPEATED_VIDEOS_PAT
         if row.repetition > 0:
             if os.path.isfile(path_gif):
                 os.system("ffmpeg -stream_loop {0} -i {1} -c copy {2}".format(row.repetition, path_gif, new_path_gif))
-        else :
-            if os.path.isfile(path_gif):
-                shutil.copy(path_gif, new_path_gif, follow_symlinks=False)
+        elif os.path.isfile(path_gif):
+            shutil.copy(path_gif, new_path_gif, follow_symlinks=False)
 
 
 def generate_design_file():
@@ -148,7 +147,7 @@ def generate_design_file():
         last_split = 0
         # search for splits close to ideal splits
         fail = False
-        for sp in range(target_run_num-1):
+        for _ in range(target_run_num-1):
             cond = np.abs(csum-last_split-TARGET_GIFS_DURATION)
             if not any(cond<RUN_DURATION_THR):
                 fail = True
@@ -244,19 +243,19 @@ def rearrange_individual_design_file():
 
     runs_sub05_ses001 = ['14', '17', '02', '27', '22', '25'] #Run number that sub-05 did instead of sub-03
     runs_sub05_ses001 = [f"run-{run}_design.tsv" for run in runs_sub05_ses001]
-    
+
     #Put those runs at the end of sub-03 tsv file
     print()
     df_sub_03 = pd.read_csv(os.path.join(EMOTION_DATA_PATH, OUTPUT_RUNS_ORDER_PATH, 'sub-03_design_run_order.tsv'), sep='\t', index_col=0)
     df_sub_03 = pd.concat([df_sub_03[~df_sub_03.tsv.isin(runs_sub05_ses001)], df_sub_03[df_sub_03.tsv.isin(runs_sub05_ses001)]]).reset_index(drop=True)
-    
+
     out_fname_03 = os.path.join(
-    EMOTION_DATA_PATH, 
-    OUTPUT_RUNS_ORDER_PATH,
-    f"sub-03_design_run_order.tsv"
+        EMOTION_DATA_PATH,
+        OUTPUT_RUNS_ORDER_PATH,
+        "sub-03_design_run_order.tsv",
     )
     df_sub_03.tsv.to_csv(out_fname_03, sep="\t")
-    
+
 
     #Generate a new randomised tsv file for sub-05 taking into account those runs
     runs_sub05_ses002 = ['27', '09', '20', '14']
@@ -266,9 +265,9 @@ def rearrange_individual_design_file():
     df_sub_05_shuffle = df_sub_05[~df_sub_05.tsv.isin(runs_sub05)].sample(frac=1)
     df_sub_05 = pd.DataFrame(pd.concat([pd.Series(runs_sub05), df_sub_05_shuffle.tsv]), columns=['tsv']).reset_index(drop=True)
     out_fname_05 = os.path.join(
-    EMOTION_DATA_PATH, 
-    OUTPUT_RUNS_ORDER_PATH,
-    f"sub-05_design_run_order.tsv"
+        EMOTION_DATA_PATH,
+        OUTPUT_RUNS_ORDER_PATH,
+        "sub-05_design_run_order.tsv",
     )
     df_sub_05.to_csv(out_fname_05, sep="\t")    
 

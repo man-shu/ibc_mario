@@ -36,11 +36,10 @@ Don't think too much and give the first answer that comes to mind.
         super().__init__(**kwargs)
         if self.wait_key:
             self.instruction = Triplet.INSTRUCTION_WAIT_KEY
-        if os.path.exists(words_file):
-            self.words_file = words_file
-            self.words_list = data.importConditions(self.words_file)
-        else:
-            raise ValueError("File %s does not exists" % words_file)
+        if not os.path.exists(words_file):
+            raise ValueError(f"File {words_file} does not exists")
+        self.words_file = words_file
+        self.words_list = data.importConditions(self.words_file)
 
     def _instructions(self, exp_win, ctl_win):
         screen_text = visual.TextStim(
@@ -164,11 +163,10 @@ Press B if you don’t know the word."""
 
     def __init__(self, words_file, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if os.path.exists(words_file):
-            self.words_file = words_file
-            self.words_list = data.importConditions(self.words_file)
-        else:
-            raise ValueError("File %s does not exists" % words_file)
+        if not os.path.exists(words_file):
+            raise ValueError(f"File {words_file} does not exists")
+        self.words_file = words_file
+        self.words_list = data.importConditions(self.words_file)
 
 
     def _instructions(self, exp_win, ctl_win):
@@ -271,11 +269,10 @@ class WordFamiliarity(Task):
 
     def __init__(self, words_file, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if os.path.exists(words_file):
-            self.words_file = words_file
-            self.words_list = data.importConditions(self.words_file)
-        else:
-            raise ValueError("File %s does not exists" % words_file)
+        if not os.path.exists(words_file):
+            raise ValueError(f"File {words_file} does not exists")
+        self.words_file = words_file
+        self.words_list = data.importConditions(self.words_file)
 
 
     def _instructions(self, exp_win, ctl_win):
@@ -383,7 +380,7 @@ class Reading(Task):
             self.words_list = pandas.read_csv(words_file, sep="\t")
             self.duration = len(self.words_list)
         else:
-            raise ValueError("File %s does not exists" % words_file)
+            raise ValueError(f"File {words_file} does not exists")
 
     def _instructions(self, exp_win, ctl_win):
         screen_text = visual.TextStim(
@@ -397,7 +394,7 @@ class Reading(Task):
         if ctl_win:
             ctl_win.setColor(self.bg_color, "rgb")
 
-        for frameN in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
+        for _ in range(config.FRAME_RATE * config.INSTRUCTION_DURATION):
             screen_text.draw(exp_win)
             if ctl_win:
                 screen_text.draw(ctl_win)
